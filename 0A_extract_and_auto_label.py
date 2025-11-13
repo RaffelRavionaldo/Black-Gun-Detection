@@ -3,21 +3,16 @@ import cv2
 from ultralytics import YOLO
 from tqdm import tqdm
 
-# --- Konfigurasi ---
-video_folder = 'test videos'                   # Folder berisi video
-output_folder = 'data_test_videos/dataset'                  # Folder hasil output (images dan txt)
-# model_head
-# model_path = r'C:\Users\raffe\Documents\broox\people_detection\model\head\yolov8x_v1_head.pt'                 # Bisa diganti ke model custom
-# model_body 
+# --- Configuration ---
+video_folder = 'test videos'                   # Folder contains video.
+output_folder = 'data_test_videos/dataset'     # Folder output (images and txt).
 model_path = r'models/real_models_1.pt'
-target_classes = [0]                      # Deteksi hanya class tertentu (misalnya 0 = person), None untuk semua
-frames_per_second = 1
+target_classes = [0]                           # if want to detect specific class (like 0 = person), None for all classes.
+frames_per_second = 1                          # how many frames you want to get from every seconds of video.
 
-# --- Inisialisasi Model ---
 model = YOLO(model_path)
 os.makedirs(output_folder, exist_ok=True)
 
-# --- Fungsi untuk Proses Video ---
 def process_video(video_path):
     video_name = os.path.splitext(os.path.basename(video_path))[0]
     cap = cv2.VideoCapture(video_path)
@@ -31,7 +26,6 @@ def process_video(video_path):
 
     frame_num = 0
 
-    # Buat folder output per video
     video_output_dir = os.path.join(output_folder, video_name)
     os.makedirs(video_output_dir, exist_ok=True)
 
@@ -44,12 +38,10 @@ def process_video(video_path):
 
         results = model(frame, verbose=False)[0]
 
-        # Simpan gambar
         frame_filename = f"{video_name}_{frame_num:05d}.jpg"
         frame_path = os.path.join(video_output_dir, frame_filename)
         cv2.imwrite(frame_path, frame)
 
-        # Simpan label YOLOv8
         label_filename = frame_filename.replace('.jpg', '.txt')
         label_path = os.path.join(video_output_dir, label_filename)
         with open(label_path, 'w') as f:
@@ -64,14 +56,13 @@ def process_video(video_path):
     cap.release()
     print(f"Selesai: {video_name}")
 
-# --- Proses Semua Video ---
 video_exts = ['.mp4', '.avi', '.mov', '.mkv']
 video_files = [f for f in os.listdir(video_folder) if any(f.lower().endswith(ext) for ext in video_exts)]
 
-print(f"🔍 Menemukan {len(video_files)} video di folder '{video_folder}'")
+print(f"🔍 found {len(video_files)} video in folder '{video_folder}'")
 
 for video_file in tqdm(video_files, desc="Total Progress", unit="video"):
     video_path = os.path.join(video_folder, video_file)
     process_video(video_path)
 
-print("✅ Semua video telah selesai diproses.")
+print("✅ all video already processed.")
